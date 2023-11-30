@@ -20,14 +20,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - run: git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+      - run: git config user.name "$GITHUB_ACTOR"
       - name: Update
         run: |
           cd test
           npm version minor
           git commit -a -m "Update test"
-          
-      - run: git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-      - run: git config user.name "$GITHUB_ACTOR"
       - run: git status
       - run: VERSION=$(node -p "require('./test/package.json').version")
       - run: node -p "require('./test/package.json').version"
