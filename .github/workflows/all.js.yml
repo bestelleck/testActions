@@ -1,0 +1,46 @@
+name: Update version of all packages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+    tests:
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            src:
+              - 'src/**'
+            test:
+              - 'test/**'
+  
+      # run only if 'src' files were changed
+      - name: src
+        if: steps.filter.outputs.backend == 'true'
+        run: |
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git config user.name "github-actions[bot]"
+            cd src
+            npm version minor
+            VERSION=$(node -p "require('./package.json').version")
+            git commit -a -m "Update src ${VERSION}"
+            git tag runtime-${VERSION}
+            git push "https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY.git" --follow-tags
+  
+      # run only if 'test' files were changed
+      - name: test
+        if: steps.filter.outputs.frontend == 'true'
+        run: |
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git config user.name "github-actions[bot]"
+            cd test
+            npm version minor
+            VERSION=$(node -p "require('./package.json').version")
+            git commit -a -m "Update test ${VERSION}"
+            git tag runtime-${VERSION}
+            git push "https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY.git" --follow-tags
