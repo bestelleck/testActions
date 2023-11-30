@@ -18,7 +18,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - run: node -p "require('./package.json').version"
       - run: git config user.email "version.bot@yasoon.com"
       - run: git config user.name "Version Bot"
       - run: npm version patch
       - run: git push "https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY.git"
+      - run: node -p "require('./package.json').version"
