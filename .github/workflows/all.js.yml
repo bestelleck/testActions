@@ -15,7 +15,7 @@ jobs:
       srcChanged: ${{ steps.filter.outputs.src }}
       testChanged: ${{ steps.filter.outputs.test }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: dorny/paths-filter@v2
       id: filter
       with:
@@ -30,6 +30,7 @@ jobs:
     needs: paths-filter
     if: needs.paths-filter.outputs.srcChanged == 'true'
     steps:
+    - uses: actions/checkout@v3
     - name: workflow tests
       run: |
             echo "updateSrc"
@@ -47,6 +48,7 @@ jobs:
     needs: [paths-filter, updateSrc]
     if: ${{ always() && needs.paths-filter.outputs.testChanged == 'true' }}
     steps:
+    - uses: actions/checkout@v3
     - name: workflow tests
       run: |
             echo "updateTest"
