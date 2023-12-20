@@ -36,6 +36,7 @@ jobs:
             echo "updateSrc"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git config user.name "github-actions[bot]"
+            git pull
             cd src
             npm version minor
             VERSION=$(node -p "require('./package.json').version")
@@ -54,6 +55,7 @@ jobs:
             echo "updateTest"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git config user.name "github-actions[bot]"
+            git pull
             cd test
             npm version minor
             VERSION=$(node -p "require('./package.json').version")
