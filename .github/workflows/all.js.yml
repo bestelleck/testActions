@@ -9,23 +9,30 @@ permissions:
   contents: write
 
 jobs:
-    tests:
-      runs-on: ubuntu-latest
-      steps:
-      - uses: actions/checkout@v3
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            src:
-              - 'src/**'
-            test:
-              - 'test/**'
-  
-      # run only if 'src' files were changed
-      - name: src
-        if: steps.filter.outputs.src == 'true'
-        run: |
+  paths-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      srcChanged: ${{ steps.filter.outputs.src }}
+      testChanged: ${{ steps.filter.outputs.test }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          src:
+            - 'src/**'
+          test:
+            - 'test/**'
+
+  updateSrc:
+    runs-on: ubuntu-latest
+    needs: paths-filter
+    if: needs.paths-filter.outputs.srcChanged == 'true'
+    steps:
+    - name: workflow tests
+      run: |
+            echo "updateSrc"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git config user.name "github-actions[bot]"
             cd src
@@ -34,11 +41,15 @@ jobs:
             git commit -a -m "Update src ${VERSION}"
             git tag runtime-${VERSION}
             git push "https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY.git" --follow-tags
-  
-      # run only if 'test' files were changed
-      - name: test
-        if: steps.filter.outputs.test == 'true'
-        run: |
+
+  updateTest:
+    runs-on: ubuntu-latest
+    needs: [paths-filter, updateSrc]
+    if: ${{ always() && needs.paths-filter.outputs.testChanged == 'true' }}
+    steps:
+    - name: workflow tests
+      run: |
+            echo "updateTest"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git config user.name "github-actions[bot]"
             cd test
@@ -47,3 +58,4 @@ jobs:
             git commit -a -m "Update test ${VERSION}"
             git tag runtime-${VERSION}
             git push "https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY.git" --follow-tags
+
